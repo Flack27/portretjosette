@@ -49,5 +49,22 @@ services:
     ports:
       - "8090:8090"
 
+  # Cloudflare Tunnel — the public entrypoint on the home server (no ports opened on
+  # the router; Cloudflare terminates TLS). Uncomment once the domain is registered in
+  # Cloudflare and you've created a tunnel. Put its token in .env (CLOUDFLARE_TUNNEL_TOKEN),
+  # then `docker compose up -d`. Configure these public hostnames in the CF dashboard:
+  #     portretdoorjosette.nl      -> http://web:3000
+  #     cms.portretdoorjosette.nl  -> http://pocketbase:8090
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: portret-cloudflared
+  #   restart: unless-stopped
+  #   command: tunnel --no-autoupdate run
+  #   environment:
+  #     TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+  #   depends_on:
+  #     - web
+  #     - pocketbase
+
 volumes:
   pb_data:
