@@ -1,0 +1,53 @@
+name: portret-door-josette
+
+# Two containers behind your existing reverse proxy:
+#   web        → the public site (portretdoorjosette.nl)         :3000
+#   pocketbase → CMS + admin + image store (e.g. cms.portret…)   :8090
+# They talk over the internal Docker network by service name.
+
+services:
+  web:
+    build:
+      context: ./web
+      args:
+        # NEXT_PUBLIC_* are baked into the build (client bundle + image hosts).
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+        NEXT_PUBLIC_POCKETBASE_URL: ${NEXT_PUBLIC_POCKETBASE_URL}
+        # Optional: Google Search Console meta-tag verification (baked at build).
+        GOOGLE_SITE_VERIFICATION: ${GOOGLE_SITE_VERIFICATION:-}
+    restart: unless-stopped
+    depends_on:
+      - pocketbase
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      # Data is fetched over the internal network; images resolve via the public URL.
+      POCKETBASE_URL: http://pocketbase:8090
+      NEXT_PUBLIC_POCKETBASE_URL: ${NEXT_PUBLIC_POCKETBASE_URL}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      CONTACT_TO_EMAIL: ${CONTACT_TO_EMAIL}
+      CONTACT_FROM_EMAIL: ${CONTACT_FROM_EMAIL}
+      NEXT_PUBLIC_FACEBOOK_URL: ${NEXT_PUBLIC_FACEBOOK_URL:-}
+      NEXT_PUBLIC_INSTAGRAM_URL: ${NEXT_PUBLIC_INSTAGRAM_URL:-}
+    ports:
+      - "3000:3000"
+
+  pocketbase:
+    build:
+      context: ./pocketbase
+      args:
+        PB_VERSION: ${PB_VERSION:-0.39.5}
+    restart: unless-stopped
+    environment:
+      # The pb_hooks revalidation hook calls the Next app on every content change.
+      REVALIDATE_URL: http://web:3000/api/revalidate
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET}
+    volumes:
+      - pb_data:/pb/pb_data
+    ports:
+      - "8090:8090"
+
+volumes:
+  pb_data:

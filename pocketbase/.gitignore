@@ -1,0 +1,2 @@
+# Runtime database + uploaded files live in the mounted volume, never in git.
+pb_data/

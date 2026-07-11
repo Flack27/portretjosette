@@ -1,0 +1,23 @@
+# Secrets / env
+.env
+.env.local
+web/.env
+web/.env.local
+
+# PocketBase runtime data (database + uploaded images live in the volume)
+pocketbase/pb_data/
+# Local PocketBase binary (downloaded for local dev) + debug scratch
+pocketbase.exe
+pocketbase/hookdbg.txt
+
+# Node / build artifacts (web/ has its own .gitignore too)
+node_modules/
+web/.next/
+web/next-env.d.ts
+
+# Local Claude Code settings (per-user)
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
