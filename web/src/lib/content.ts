@@ -45,7 +45,7 @@ export const getPortraits = cache(async (): Promise<Portrait[]> => {
   try {
     const items = await pbList<PbPortrait>("portraits", {
       tag: PB_TAGS.portraits,
-      sort: "order,-created",
+      sort: "-created",
     });
     return items
       .filter((r) => r.image)
@@ -126,7 +126,9 @@ export const getCategoriesWithCounts = cache(
       .map((c) => {
         const inCategory = portraits
           .filter((p) => p.category === c.slug)
-          .sort((a, b) => Number(b.featured) - Number(a.featured) || a.order - b.order);
+          // Featured (pinned) first, then newest — matches the newest-first gallery
+          // order (getPortraits sorts by -created), so the source array is already newest-first.
+          .sort((a, b) => Number(b.featured) - Number(a.featured));
         return {
           ...c,
           count: inCategory.length,
