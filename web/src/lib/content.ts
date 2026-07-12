@@ -113,7 +113,7 @@ export const getCategories = cache(async (): Promise<Category[]> => {
 
 export interface CategoryWithCount extends Category {
   count: number;
-  /** Up to 5 image URLs for the folder-card fan (featured first, then order). */
+  /** Up to 5 image URLs for the folder-card fan (order number first, then newest). */
   previews: string[];
 }
 
@@ -129,9 +129,16 @@ export const getCategoriesWithCounts = cache(
       .map((c) => {
         const inCategory = portraits
           .filter((p) => p.category === c.slug)
-          // Featured (pinned) first, then newest — matches the newest-first gallery
-          // order (getPortraits sorts by -created), so the source array is already newest-first.
-          .sort((a, b) => Number(b.featured) - Number(a.featured));
+          // Fan order: photos with an `order` number come first (1,2,3…), the rest
+          // by newest. inCategory is already newest-first (getPortraits sorts -created)
+          // and Array.sort is stable, so unordered photos keep their newest order.
+          // previews[0] lands in the fan centre, [1] left-middle, [2] right-middle,
+          // [3] left-outer, [4] right-outer (see CategoryCard fanLayout).
+          .sort((a, b) => {
+            const ao = a.order && a.order > 0 ? a.order : Infinity;
+            const bo = b.order && b.order > 0 ? b.order : Infinity;
+            return ao - bo;
+          });
         return {
           ...c,
           count: inCategory.length,
