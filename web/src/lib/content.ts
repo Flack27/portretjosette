@@ -75,9 +75,12 @@ export const getPortraitsByCategory = cache(
 
 export const getFeaturedPortraits = cache(
   async (limit = 4): Promise<Portrait[]> => {
-    const all = await getPortraits();
+    const all = await getPortraits(); // already newest-first
     const featured = all.filter((p) => p.featured);
-    return (featured.length >= limit ? featured : all).slice(0, limit);
+    const rest = all.filter((p) => !p.featured);
+    // Pinned (featured) first, then newest — same rule as the category fan, so
+    // "featured" means "to the front" consistently everywhere.
+    return [...featured, ...rest].slice(0, limit);
   },
 );
 
