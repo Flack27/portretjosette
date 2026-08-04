@@ -161,6 +161,7 @@ interface PbPrice extends PbRecord {
   label: string;
   sublabel: string;
   price: string;
+  priceAlt: string;
   note: string;
   order: number;
 }
@@ -175,6 +176,7 @@ export const getPrices = cache(async (): Promise<PriceRow[]> => {
       label: r.label,
       sublabel: r.sublabel || undefined,
       price: r.price,
+      priceAlt: r.priceAlt || undefined,
       note: r.note || undefined,
       order: r.order ?? 0,
     }));

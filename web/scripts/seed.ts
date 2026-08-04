@@ -63,6 +63,7 @@ async function seedPrices(pb: PocketBase) {
       label: p.label,
       sublabel: p.sublabel ?? "",
       price: p.price,
+      priceAlt: p.priceAlt ?? "",
       note: p.note ?? "",
       order: p.order,
     };

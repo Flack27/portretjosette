@@ -35,27 +35,31 @@ export default async function TarievenPage() {
               title="Portretten"
               tag="Excl. lijst"
               headerClassName="bg-forest-900"
+              columns={["A4", "A3"]}
               rows={portretten}
+              /* Framing is optional on these, so its surcharge lives with them. */
+              footer={
+                <div className="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-2">
+                  <Eyebrow>{text(content, "tarieven.afwerking_title")}</Eyebrow>
+                  <div className="flex gap-5">
+                    {afwerking.map((row) => (
+                      <p key={row.id} className="text-[13px] text-muted-500">
+                        {row.label}{" "}
+                        <span className="ml-0.5 font-display text-[17px] text-forest-900">
+                          {row.price}
+                        </span>
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              }
             />
             <PriceCard
               title="Klein werk"
-              tag="Incl. lijst"
+              tag="15 × 15 cm · incl. lijst"
               headerClassName="bg-forest-600"
               rows={kleinWerk}
             />
-            <div className="rounded-card border border-[#e2dccc] bg-paper-100 px-[26px] py-[22px]">
-              <Eyebrow>{text(content, "tarieven.afwerking_title")}</Eyebrow>
-              <div className="mt-4 flex flex-wrap gap-9">
-                {afwerking.map((row) => (
-                  <div key={row.id}>
-                    <p className="font-display text-[26px] leading-none text-forest-900">
-                      {row.price}
-                    </p>
-                    <p className="mt-1 text-[13px] text-muted-500">{row.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Right column — CTA + "Werken met foto's" */}

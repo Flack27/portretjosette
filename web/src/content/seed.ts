@@ -133,18 +133,18 @@ export const EXCLUDED_ART = [
 ];
 
 // ─── Prices ──────────────────────────────────────────────────────────────────
+// "Portretten" rows carry two prices: `price` = A4, `priceAlt` = A3. An empty
+// string renders as "–", so a subject can be offered in one format only.
 const priceSeed: Omit<PriceRow, "id" | "order">[] = [
-  { group: "Portretten", label: "A4 — persoon of dier", price: "€100" },
-  { group: "Portretten", label: "A4 — duo", price: "€175" },
-  { group: "Portretten", label: "A3 — persoon of dier", price: "€150" },
-  { group: "Portretten", label: "A3 — duo", price: "€225" },
-  { group: "Portretten", label: "A3 — trio", price: "€275" },
-  {
-    group: "Klein werk",
-    label: "Vogels, bosdieren & insecten",
-    sublabel: "15×15 cm · incl. lijst en passe-partout",
-    price: "€35",
-  },
+  { group: "Portretten", label: "Dier", price: "€75", priceAlt: "€125" },
+  { group: "Portretten", label: "Persoon", price: "€100", priceAlt: "€150" },
+  { group: "Portretten", label: "Duo dieren", price: "€125", priceAlt: "€175" },
+  { group: "Portretten", label: "Persoon + dier", price: "€150", priceAlt: "€200" },
+  { group: "Portretten", label: "Duo personen", price: "€175", priceAlt: "€225" },
+  { group: "Portretten", label: "Trio dieren", price: "", priceAlt: "€250" },
+  { group: "Portretten", label: "Trio personen", price: "", priceAlt: "€275" },
+  { group: "Klein werk", label: "Bosdier", price: "€35" },
+  { group: "Klein werk", label: "Eigen huisdier", price: "€45" },
   { group: "Afwerking", label: "A4 formaat", price: "€25" },
   { group: "Afwerking", label: "A3 formaat", price: "€30" },
 ];

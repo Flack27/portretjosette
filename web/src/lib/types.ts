@@ -34,7 +34,10 @@ export interface PriceRow {
   group: PriceGroup;
   label: string;
   sublabel?: string;
+  /** Price in the card's first column (A4 for portraits). "" renders as "–". */
   price: string;
+  /** Optional second column (A3 for portraits); omitted on single-column cards. */
+  priceAlt?: string;
   note?: string;
   order: number;
 }
