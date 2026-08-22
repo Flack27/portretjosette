@@ -9,9 +9,40 @@ const schema = z.object({
   naam: z.string().trim().min(1).max(120),
   email: z.string().trim().email().max(200),
   bericht: z.string().trim().min(1).max(5000),
-  website: z.string().optional().default(""), // honeypot
+  // Honeypot. "hp_field" is the current name; "website" is still accepted
+  // because a browser holding a cached copy of the old page keeps posting it.
+  hp_field: z.string().optional().default(""),
+  website: z.string().optional().default(""),
+  // How long the visitor spent on the form, measured in the browser.
+  elapsedMs: z.number().optional(),
+  // Legacy: the browser's render timestamp. Kept only for cached clients, and
+  // no longer compared against the server clock (see below).
   renderedAt: z.number().optional(),
 });
+
+const MIN_FILL_MS = 2000;
+
+/**
+ * Whether the submission looks like an instant machine post.
+ *
+ * `elapsedMs` is a duration measured entirely in the browser, so there are no
+ * two clocks to disagree. The old check subtracted the browser's render
+ * timestamp from the SERVER's clock, which meant any visitor whose device ran
+ * fast produced a tiny or negative difference, looked like a bot, and had their
+ * message dropped while being shown a success message. Josette's own machine hit
+ * exactly this. A legacy `renderedAt` is therefore only trusted when it lands in
+ * a sane range; anything else counts as clock skew, not as spam.
+ */
+function looksInstant(elapsedMs?: number, renderedAt?: number): boolean {
+  if (typeof elapsedMs === "number") {
+    return elapsedMs >= 0 && elapsedMs < MIN_FILL_MS;
+  }
+  if (typeof renderedAt === "number") {
+    const diff = Date.now() - renderedAt;
+    return diff >= 0 && diff < MIN_FILL_MS; // negative diff = skewed clock, not a bot
+  }
+  return false;
+}
 
 /* Best-effort in-memory rate limit. Fine for a single container; if the app is
    ever scaled horizontally, move this to a shared store (e.g. PocketBase/Redis). */
@@ -57,12 +88,23 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Controleer de ingevulde velden." }, { status: 400 });
   }
-  const { naam, email, bericht, website, renderedAt } = parsed.data;
+  const { naam, email, bericht, hp_field, website, elapsedMs, renderedAt } = parsed.data;
 
-  // Spam signals: honeypot filled, or submitted implausibly fast (< 2s).
-  const tooFast = typeof renderedAt === "number" ? Date.now() - renderedAt < 2000 : false;
-  if (website.trim() !== "" || tooFast) {
-    return NextResponse.json({ ok: true }); // pretend success, silently drop
+  // Spam signals: honeypot filled, or submitted implausibly fast.
+  const honeypot = (hp_field || website).trim();
+  const instant = looksInstant(elapsedMs, renderedAt);
+  if (honeypot !== "" || instant) {
+    // Still answer "ok" so a bot learns nothing, but never drop a message
+    // without a trace again: this branch discarding real mail in silence is the
+    // reason a delivery problem was invisible for weeks. One line per drop, with
+    // the deciding values, so the next report can be checked in seconds.
+    console.warn(
+      `[contact] dropped as spam: reason=${honeypot !== "" ? "honeypot" : "instant"} ` +
+        `elapsedMs=${elapsedMs ?? "none"} renderedAtDiff=${
+          typeof renderedAt === "number" ? Date.now() - renderedAt : "none"
+        } naam=${JSON.stringify(naam)} email=${JSON.stringify(email)} ip=${ip}`,
+    );
+    return NextResponse.json({ ok: true });
   }
 
   const apiKey = process.env.RESEND_API_KEY;
@@ -79,7 +121,7 @@ export async function POST(req: Request) {
 
   const resend = new Resend(apiKey);
   try {
-    const { error } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from,
       to,
       replyTo: email,
@@ -91,6 +133,9 @@ export async function POST(req: Request) {
 <p style="white-space:pre-wrap">${escapeHtml(bericht)}</p>`,
     });
     if (error) throw new Error(error.message);
+    // The Resend id makes a report ("I sent one and it never arrived") checkable
+    // against their dashboard instead of guesswork.
+    console.info(`[contact] sent id=${data?.id ?? "unknown"} to=${to} replyTo=${email}`);
   } catch (err) {
     console.error("[contact] send failed:", err);
     return NextResponse.json(
