@@ -55,16 +55,16 @@ services:
   # then `docker compose up -d`. Configure these public hostnames in the CF dashboard:
   #     portretdoorjosette.nl      -> http://web:3000
   #     cms.portretdoorjosette.nl  -> http://pocketbase:8090
-  # cloudflared:
-  #   image: cloudflare/cloudflared:latest
-  #   container_name: portret-cloudflared
-  #   restart: unless-stopped
-  #   command: tunnel --no-autoupdate run
-  #   environment:
-  #     TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
-  #   depends_on:
-  #     - web
-  #     - pocketbase
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: portret-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - web
+      - pocketbase
 
 volumes:
   pb_data:
