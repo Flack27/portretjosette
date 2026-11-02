@@ -100,22 +100,26 @@ export function CategoryCard({
   name,
   count,
   previews,
+  index = 0,
 }: {
   slug: CategorySlug;
   name: string;
   count: number;
   previews: string[];
+  /** Position in the grid; staggers the entrance so the folders lay down in turn. */
+  index?: number;
 }) {
   const prints = fanLayout(previews);
 
   return (
     <Link
       href={`/portfolio/${slug}`}
-      className="group block rounded-folder border border-line-200 bg-card-50 px-5 pt-6 pb-[18px] shadow-[0_2px_0_#ece7d9] transition-transform duration-300 hover:-translate-y-1"
+      style={{ "--lay-i": index % 2 } as React.CSSProperties}
+      className="group lay-reveal focus-ring block rounded-folder border border-line-200 bg-card-50 px-5 pt-6 pb-[18px] shadow-[0_2px_0_#ece7d9] transition-transform duration-300 ease-settle hover:-translate-y-1 focus-visible:-translate-y-1 active:translate-y-0 active:duration-100"
     >
       {/* Fan stage */}
       <div className="relative h-[168px] md:h-[196px]">
-        <div className="absolute inset-0 flex origin-center scale-[0.8] items-center justify-center transition-transform duration-500 md:scale-100 md:group-hover:scale-[1.03]">
+        <div className="absolute inset-0 flex origin-center scale-[0.8] items-center justify-center transition-transform duration-500 ease-settle md:scale-100 md:group-hover:scale-[1.03] md:group-focus-visible:scale-[1.03]">
           {prints.map((cfg, i) => (
             <Print key={i} {...cfg} />
           ))}

@@ -52,7 +52,7 @@ export function SocialLinks({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-forest-900 text-white transition-colors hover:bg-forest-600"
+          className="focus-ring flex h-11 w-11 items-center justify-center rounded-full bg-forest-900 text-white transition-[background-color,transform] duration-200 ease-settle hover:bg-forest-600 active:scale-95"
         >
           <Icon width={19} height={19} />
         </a>

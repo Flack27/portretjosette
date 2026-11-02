@@ -19,19 +19,20 @@ export default async function PortfolioPage() {
   return (
     <section className="screen-section bg-paper-50">
       <Container className="py-10">
-        <h1 className="text-h1 text-ink-900">{text(content, "portfolio.title")}</h1>
-        <p className="mt-3 max-w-xl text-lead text-muted-600">
+        <h1 className="lay-in text-h1 text-ink-900">{text(content, "portfolio.title")}</h1>
+        <p className="lay-in mt-3 max-w-xl text-lead text-muted-600 [--lay-delay:55ms]">
           {text(content, "portfolio.subtitle")}
         </p>
 
         <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-5">
-          {categories.map((c) => (
+          {categories.map((c, i) => (
             <CategoryCard
               key={c.slug}
               slug={c.slug}
               name={c.name}
               count={c.count}
               previews={c.previews}
+              index={i}
             />
           ))}
         </div>

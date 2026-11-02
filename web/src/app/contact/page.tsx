@@ -20,15 +20,17 @@ export default async function ContactPage() {
       <Container className="grid gap-12 py-10 md:grid-cols-2 md:gap-[60px]">
         {/* Form */}
         <div>
-          <h1 className="text-h2 text-ink-900">{text(content, "contact.title")}</h1>
-          <p className="mt-3 max-w-md text-muted-600">{text(content, "contact.subtitle")}</p>
-          <div className="mt-8">
+          <h1 className="lay-in text-h2 text-ink-900">{text(content, "contact.title")}</h1>
+          <p className="lay-in mt-3 max-w-md text-muted-600 [--lay-delay:55ms]">
+            {text(content, "contact.subtitle")}
+          </p>
+          <div className="lay-in mt-8 [--lay-delay:95ms]">
             <ContactForm />
           </div>
         </div>
 
         {/* Info */}
-        <div className="flex h-full flex-col">
+        <div className="lay-in flex h-full flex-col [--lay-delay:165ms]">
           {settings.mapEmbedUrl ? (
             <iframe
               src={settings.mapEmbedUrl}
@@ -55,7 +57,7 @@ export default async function ContactPage() {
               Mail:{" "}
               <a
                 href={`mailto:${settings.email}`}
-                className="font-semibold text-forest-600 hover:underline"
+                className="focus-ring font-semibold text-forest-600 hover:underline"
               >
                 {settings.email}
               </a>

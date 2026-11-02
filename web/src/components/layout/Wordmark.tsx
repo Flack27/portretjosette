@@ -13,7 +13,11 @@ export function Wordmark({
   size?: "md" | "sm";
 }) {
   return (
-    <Link href="/" className={cn("inline-block", className)} aria-label={`${SITE.name} — home`}>
+    <Link
+      href="/"
+      className={cn("focus-ring focus-on-dark inline-block", className)}
+      aria-label={`${SITE.name} — home`}
+    >
       <span
         className={cn(
           "block font-display font-semibold leading-none text-on-forest-heading",

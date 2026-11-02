@@ -24,13 +24,15 @@ export default async function TarievenPage() {
     <section className="screen-section bg-paper-50">
       <Container className="py-10">
         <div className="max-w-[620px]">
-          <h1 className="text-h2 text-ink-900">{text(content, "tarieven.title")}</h1>
-          <p className="mt-3 text-muted-600">{text(content, "tarieven.intro")}</p>
+          <h1 className="lay-in text-h2 text-ink-900">{text(content, "tarieven.title")}</h1>
+          <p className="lay-in mt-3 text-muted-600 [--lay-delay:55ms]">
+            {text(content, "tarieven.intro")}
+          </p>
         </div>
 
         <div className="mt-8 grid items-start gap-6 md:grid-cols-2">
           {/* Left column — the prices */}
-          <div className="flex flex-col gap-6">
+          <div className="lay-in flex flex-col gap-6 [--lay-delay:95ms]">
             <PriceCard
               title="Portretten"
               tag="Excl. lijst"
@@ -56,14 +58,14 @@ export default async function TarievenPage() {
             />
             <PriceCard
               title="Klein werk"
-              tag="15 × 15 cm · incl. lijst"
+              tag="15 × 15–18 cm · incl. lijst"
               headerClassName="bg-forest-600"
               rows={kleinWerk}
             />
           </div>
 
           {/* Right column — CTA + "Werken met foto's" */}
-          <div className="flex flex-col gap-6">
+          <div className="lay-in flex flex-col gap-6 [--lay-delay:165ms]">
             <div className="rounded-card bg-forest-900 px-[26px] py-6 text-[#e9ecdf]">
               <h2 className="font-display text-[21px] text-on-forest-heading">
                 {text(content, "tarieven.cta_title")}

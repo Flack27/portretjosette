@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { Portrait } from "@/lib/types";
 
@@ -10,6 +10,9 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
   const [index, setIndex] = useState<number | null>(null);
   const open = index !== null;
   const count = portraits.length;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // The tile that opened the lightbox, so focus can go back where it came from.
+  const openerRef = useRef<HTMLButtonElement | null>(null);
 
   const close = useCallback(() => setIndex(null), []);
   const prev = useCallback(
@@ -21,18 +24,43 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
     [count],
   );
 
+  // While the lightbox is open it owns the screen: the page behind cannot
+  // scroll, Escape and the arrow keys drive it, Tab stays inside it, and
+  // closing returns focus to the thumbnail that opened it.
   useEffect(() => {
     if (!open) return;
+    const dialog = dialogRef.current;
+    const opener = openerRef.current;
+
+    const focusable = () =>
+      Array.from(dialog?.querySelectorAll<HTMLElement>("button:not([disabled])") ?? []);
+
+    focusable()[0]?.focus();
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      else if (e.key === "ArrowLeft") prev();
-      else if (e.key === "ArrowRight") next();
+      if (e.key === "Escape") return close();
+      if (e.key === "ArrowLeft") return prev();
+      if (e.key === "ArrowRight") return next();
+      if (e.key !== "Tab") return;
+      const items = focusable();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
+
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      opener?.focus();
     };
   }, [open, close, prev, next]);
 
@@ -50,11 +78,19 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
     <>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-3.5">
         {portraits.map((p, i) => (
-          <li key={p.id}>
+          <li
+            key={p.id}
+            className="lay-reveal"
+            // Stagger by column, so a row of prints lays down left to right.
+            style={{ "--lay-i": i % 4 } as React.CSSProperties}
+          >
             <button
               type="button"
-              onClick={() => setIndex(i)}
-              className="group relative block aspect-square w-full overflow-hidden rounded-crisp shadow-print-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-600 focus-visible:ring-offset-2 focus-visible:ring-offset-paper-50"
+              onClick={(e) => {
+                openerRef.current = e.currentTarget;
+                setIndex(i);
+              }}
+              className="group focus-ring relative block aspect-square w-full overflow-hidden rounded-crisp shadow-print-soft transition-transform duration-200 ease-settle active:scale-[0.98]"
               aria-label={`Bekijk ${p.title}`}
             >
               <Image
@@ -62,7 +98,7 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
                 alt={p.alt}
                 fill
                 sizes="(min-width: 768px) 22vw, 45vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                className="object-cover transition-transform duration-500 ease-settle group-hover:scale-[1.04] group-focus-visible:scale-[1.04]"
               />
             </button>
           </li>
@@ -71,7 +107,8 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
 
       {open && current && (
         <div
-          className="fixed inset-0 z-50 flex flex-col bg-forest-900/95 backdrop-blur-sm"
+          ref={dialogRef}
+          className="lay-in focus-on-dark fixed inset-0 z-50 flex flex-col bg-forest-900/95 backdrop-blur-sm [--lay-rise:0px]"
           role="dialog"
           aria-modal="true"
           aria-label={current.title}
@@ -85,7 +122,7 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
               type="button"
               onClick={close}
               aria-label="Sluiten"
-              className="p-1.5 hover:text-white"
+              className="focus-ring -mr-1.5 p-2.5 transition-colors hover:text-white"
             >
               <X size={26} strokeWidth={1.75} />
             </button>
@@ -99,12 +136,14 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
               type="button"
               onClick={prev}
               aria-label="Vorige"
-              className="absolute left-2 z-10 rounded-full p-2 text-on-forest-cta hover:bg-white/10 hover:text-white md:left-6"
+              className="focus-ring absolute left-2 z-10 rounded-full p-3 text-on-forest-cta transition-[background-color,color,transform] duration-200 ease-settle hover:bg-white/10 hover:text-white active:scale-90 md:left-6"
             >
               <ChevronLeft size={34} strokeWidth={1.5} />
             </button>
 
-            <figure className="flex max-h-full flex-col items-center">
+            {/* Keyed on the portrait so stepping through the gallery replays the
+                entrance: each print lays down in turn instead of swapping. */}
+            <figure key={current.id} className="lay-in flex max-h-full flex-col items-center [--lay-rise:10px]">
               <div className="relative h-[72vh] w-[86vw] max-w-4xl">
                 <Image
                   src={current.image}
@@ -129,7 +168,7 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
               type="button"
               onClick={next}
               aria-label="Volgende"
-              className="absolute right-2 z-10 rounded-full p-2 text-on-forest-cta hover:bg-white/10 hover:text-white md:right-6"
+              className="focus-ring absolute right-2 z-10 rounded-full p-3 text-on-forest-cta transition-[background-color,color,transform] duration-200 ease-settle hover:bg-white/10 hover:text-white active:scale-90 md:right-6"
             >
               <ChevronRight size={34} strokeWidth={1.5} />
             </button>

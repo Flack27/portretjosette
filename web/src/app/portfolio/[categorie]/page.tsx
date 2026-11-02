@@ -55,14 +55,14 @@ export default async function CategoryPage({ params }: Params) {
         />
 
         {/* Breadcrumb + heading (category name is the page h1) */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="lay-in flex flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             href="/portfolio"
-            className="text-[13px] text-muted-500 hover:text-forest-600"
+            className="focus-ring text-[13px] text-muted-500 transition-colors hover:text-forest-600"
           >
             Portfolio
           </Link>
-          <span className="text-[13px] text-[#b6b0a0]" aria-hidden>
+          <span className="text-[13px] text-faint-300" aria-hidden>
             /
           </span>
           <h1 className="font-display text-[22px] leading-none text-forest-900">
@@ -70,8 +70,10 @@ export default async function CategoryPage({ params }: Params) {
           </h1>
         </div>
 
-        <p className="mt-3 max-w-xl text-muted-600">{category.blurb}</p>
-        <p className="mt-1 text-[13px] text-muted-400">
+        <p className="lay-in mt-3 max-w-xl text-muted-600 [--lay-delay:55ms]">
+          {category.blurb}
+        </p>
+        <p className="lay-in mt-1 text-[13px] text-muted-400 [--lay-delay:95ms]">
           {portraits.length} {portraits.length === 1 ? "werk" : "werken"}
         </p>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 
@@ -8,9 +8,14 @@ type Status = "idle" | "submitting" | "success" | "error";
 type Errors = { naam?: string; email?: string; bericht?: string };
 
 const inputClass =
-  "w-full rounded-[3px] border border-[#d9d3c4] bg-card-50 px-3.5 text-[15px] text-ink-900 placeholder:text-muted-400 focus:border-forest-600 focus:outline-none focus:ring-1 focus:ring-forest-600";
+  "w-full rounded-[3px] border border-[#d9d3c4] bg-card-50 px-3.5 text-[15px] text-ink-900 transition-[border-color,box-shadow] duration-200 placeholder:text-muted-400 focus:border-forest-600 focus:outline-none focus:ring-1 focus:ring-forest-600";
 
 const labelClass = "mb-2 block text-[13px] font-semibold text-ink-700";
+
+/* A field in error and the sentence that explains it, kept in one place so the
+   three fields cannot drift apart. */
+const errorFieldClass = "border-red-800 focus:border-red-800 focus:ring-red-800";
+const errorTextClass = "mt-1.5 text-[13px] text-red-800";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -18,7 +23,13 @@ export function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [errors, setErrors] = useState<Errors>({});
   const [errorMsg, setErrorMsg] = useState("");
-  const renderedAt = useRef<number>(Date.now());
+  // Stamped on mount, not during render: reading the clock while rendering is
+  // an impure call. The spam check only compares it at submit time, which is
+  // always after mount, so the value it sees is unchanged.
+  const renderedAt = useRef<number>(0);
+  useEffect(() => {
+    renderedAt.current = Date.now();
+  }, []);
 
   async function onSubmit(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
@@ -38,7 +49,14 @@ export function ContactForm() {
     else if (!EMAIL_RE.test(values.email)) next.email = "Vul een geldig e-mailadres in.";
     if (!values.bericht) next.bericht = "Schrijf een bericht.";
     setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    // Send focus to the first field that needs fixing, so a keyboard or screen
+    // reader user is taken to the problem instead of having to hunt for it.
+    const firstInvalid = (["naam", "email", "bericht"] as const).find((k) => next[k]);
+    if (firstInvalid) {
+      const field = form.elements.namedItem(firstInvalid);
+      if (field instanceof HTMLElement) field.focus();
+      return;
+    }
 
     setStatus("submitting");
     setErrorMsg("");
@@ -62,7 +80,10 @@ export function ContactForm() {
 
   if (status === "success") {
     return (
-      <div className="rounded-card border border-line-200 bg-card-50 px-6 py-10 text-center">
+      <div
+        className="lay-in rounded-card border border-line-200 bg-card-50 px-6 py-10 text-center"
+        role="status"
+      >
         <p className="font-display text-[24px] text-forest-900">Bedankt voor uw bericht!</p>
         <p className="mt-2 text-muted-600">
           Ik heb uw bericht ontvangen en reageer meestal binnen een paar dagen.
@@ -90,10 +111,15 @@ export function ContactForm() {
           name="naam"
           type="text"
           autoComplete="name"
-          className={cn(inputClass, "h-12", errors.naam && "border-red-700 focus:border-red-700 focus:ring-red-700")}
+          className={cn(inputClass, "h-12", errors.naam && errorFieldClass)}
           aria-invalid={Boolean(errors.naam)}
+          aria-describedby={errors.naam ? "naam-error" : undefined}
         />
-        {errors.naam && <p className="mt-1.5 text-[13px] text-red-700">{errors.naam}</p>}
+        {errors.naam && (
+          <p id="naam-error" className={errorTextClass}>
+            {errors.naam}
+          </p>
+        )}
       </div>
 
       <div>
@@ -105,10 +131,15 @@ export function ContactForm() {
           name="email"
           type="email"
           autoComplete="email"
-          className={cn(inputClass, "h-12", errors.email && "border-red-700 focus:border-red-700 focus:ring-red-700")}
+          className={cn(inputClass, "h-12", errors.email && errorFieldClass)}
           aria-invalid={Boolean(errors.email)}
+          aria-describedby={errors.email ? "email-error" : undefined}
         />
-        {errors.email && <p className="mt-1.5 text-[13px] text-red-700">{errors.email}</p>}
+        {errors.email && (
+          <p id="email-error" className={errorTextClass}>
+            {errors.email}
+          </p>
+        )}
       </div>
 
       <div>
@@ -119,10 +150,15 @@ export function ContactForm() {
           id="bericht"
           name="bericht"
           rows={5}
-          className={cn(inputClass, "min-h-[120px] resize-y py-3", errors.bericht && "border-red-700 focus:border-red-700 focus:ring-red-700")}
+          className={cn(inputClass, "min-h-[120px] resize-y py-3", errors.bericht && errorFieldClass)}
           aria-invalid={Boolean(errors.bericht)}
+          aria-describedby={errors.bericht ? "bericht-error" : undefined}
         />
-        {errors.bericht && <p className="mt-1.5 text-[13px] text-red-700">{errors.bericht}</p>}
+        {errors.bericht && (
+          <p id="bericht-error" className={errorTextClass}>
+            {errors.bericht}
+          </p>
+        )}
       </div>
 
       {/* Honeypot — hidden from humans; bots that fill it are silently dropped. */}

@@ -19,21 +19,24 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero — Direction 1b "Atelier" */}
+      {/* Hero — Direction 1b "Atelier".
+          The one authored moment on the site: the page opens the way a print is
+          laid on paper. The eyebrow and headline settle first, the portrait last
+          and from a little further out, so the artwork is what you land on. */}
       <section className="screen-section bg-paper-50">
         <Container className="grid items-center gap-12 py-10 md:grid-cols-2 md:gap-[60px]">
           <div className="max-w-xl">
-            <Eyebrow>{text(content, "home.hero_eyebrow")}</Eyebrow>
-            <h1 className="mt-5 text-display text-ink-900">
+            <Eyebrow className="lay-in">{text(content, "home.hero_eyebrow")}</Eyebrow>
+            <h1 className="lay-in mt-5 text-display text-ink-900 [--lay-delay:55ms]">
               {text(content, "home.hero_title_lead")}{" "}
               <span className="italic text-forest-600">
                 {text(content, "home.hero_title_accent")}
               </span>
             </h1>
-            <p className="mt-6 max-w-[420px] text-lead text-muted-600">
+            <p className="lay-in mt-6 max-w-[420px] text-lead text-muted-600 [--lay-delay:95ms]">
               {text(content, "home.hero_lead")}
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
+            <div className="lay-in mt-8 flex flex-wrap items-center gap-x-7 gap-y-4 [--lay-delay:165ms]">
               <Button href="/contact">{text(content, "home.hero_cta")}</Button>
               <TextLink href="/portfolio">Bekijk het portfolio</TextLink>
             </div>
@@ -46,7 +49,7 @@ export default async function HomePage() {
             frameOffset={14}
             priority
             sizes="(min-width: 768px) 42vw, 88vw"
-            className="mx-auto w-full max-w-sm md:ml-auto md:mr-4"
+            className="lay-in mx-auto w-full max-w-sm [--lay-delay:40ms] [--lay-rise:28px] md:ml-auto md:mr-4"
           />
         </Container>
       </section>
@@ -54,25 +57,26 @@ export default async function HomePage() {
       {/* "Een greep uit het werk" */}
       <section className="bg-paper-100">
         <Container className="py-12 md:py-14">
-          <div className="flex items-end justify-between gap-4">
+          <div className="lay-reveal flex items-end justify-between gap-4">
             <h2 className="text-[26px] leading-tight md:text-[30px]">
               {text(content, "home.featured_title")}
             </h2>
             <TextLink href="/portfolio">Alles bekijken</TextLink>
           </div>
           <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-            {featured.map((p) => (
+            {featured.map((p, i) => (
               <Link
                 key={p.id}
                 href={`/portfolio/${p.category}`}
-                className="group relative block aspect-square overflow-hidden rounded-crisp shadow-print-soft"
+                style={{ "--lay-i": i } as React.CSSProperties}
+                className="group lay-reveal focus-ring relative block aspect-square overflow-hidden rounded-crisp shadow-print-soft transition-transform duration-200 ease-settle active:scale-[0.98]"
               >
                 <Image
                   src={p.image}
                   alt={p.alt}
                   fill
                   sizes="(min-width: 768px) 22vw, 45vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  className="object-cover transition-transform duration-500 ease-settle group-hover:scale-[1.03] group-focus-visible:scale-[1.03]"
                 />
               </Link>
             ))}

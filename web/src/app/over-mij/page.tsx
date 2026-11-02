@@ -29,22 +29,30 @@ export default async function OverMijPage() {
           ratio={0.82}
           frameOffset={16}
           sizes="(min-width: 768px) 42vw, 88vw"
-          className="mx-auto w-full max-w-sm md:mx-4"
+          className="lay-in mx-auto w-full max-w-sm [--lay-rise:24px] md:mx-4"
         />
 
         <div>
-          <Eyebrow>{text(content, "over.eyebrow")}</Eyebrow>
-          <h1 className="mt-3 text-h2 text-ink-900">{text(content, "over.title")}</h1>
+          <Eyebrow className="lay-in [--lay-delay:55ms]">
+            {text(content, "over.eyebrow")}
+          </Eyebrow>
+          <h1 className="lay-in mt-3 text-h2 text-ink-900 [--lay-delay:95ms]">
+            {text(content, "over.title")}
+          </h1>
 
-          <div className="mt-5 space-y-4 text-muted-600">
+          <div className="lay-in mt-5 space-y-4 text-muted-600 [--lay-delay:140ms]">
             <p>{text(content, "over.p1")}</p>
             <p>{text(content, "over.p2")}</p>
             <p>{text(content, "over.p3")}</p>
           </div>
 
           <dl className="mt-6 flex flex-wrap gap-x-8 gap-y-4 border-t border-line-300 pt-6">
-            {stats.map((s) => (
-              <div key={s.label}>
+            {stats.map((s, i) => (
+              <div
+                key={s.label}
+                className="lay-reveal"
+                style={{ "--lay-i": i } as React.CSSProperties}
+              >
                 <dt className="font-display text-[34px] leading-none text-forest-900">
                   {s.num}
                 </dt>

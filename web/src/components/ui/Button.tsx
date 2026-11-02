@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 type Variant = "primary" | "secondary" | "primaryInverse" | "secondaryInverse";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-crisp px-[26px] py-3.5 text-[14.5px] leading-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 focus-visible:ring-offset-2";
+  "inline-flex items-center justify-center gap-2 rounded-crisp px-[26px] py-3.5 text-[14.5px] leading-none transition-[background-color,color,transform] duration-200 ease-settle active:scale-[0.97] active:duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 focus-visible:ring-offset-2";
 
 const variants: Record<Variant, string> = {
   // On light (paper) surfaces

@@ -9,6 +9,12 @@ import { cn } from "@/lib/utils";
  * column per format (A4 / A3), which keeps a long list short and lets the two
  * formats be compared at a glance. Without it, each row shows a single price.
  *
+ * The matrix only appears if the rows actually carry a second price. Editorial
+ * content lives in PocketBase, where the rows can just as well be written one
+ * format at a time ("A4 — duo", "A3 — duo"); asking for columns against that
+ * shape used to print a whole column of "–". Asking is now a request, not an
+ * instruction, so the card follows whichever shape the content is in.
+ *
  * `footer` adds a tinted strip under the list for a caveat that belongs to this
  * card only (e.g. the framing surcharge on the "excl. lijst" portraits).
  */
@@ -16,7 +22,7 @@ export function PriceCard({
   title,
   tag,
   headerClassName,
-  columns,
+  columns: requestedColumns,
   rows,
   footer,
 }: {
@@ -27,6 +33,8 @@ export function PriceCard({
   rows: PriceRow[];
   footer?: ReactNode;
 }) {
+  const columns = rows.some((r) => r.priceAlt) ? requestedColumns : undefined;
+
   // Fixed-width right-aligned cells keep the two format columns lined up; the
   // narrower base size leaves the longest label ("Persoon + dier") on one line
   // on a 360px phone.
@@ -42,7 +50,7 @@ export function PriceCard({
         )}
       >
         <span className="font-display text-[22px] leading-none">{title}</span>
-        <span className="text-[12px] uppercase tracking-[0.16em] text-[#a9b490]">
+        <span className="text-[12px] uppercase tracking-[0.16em] text-on-forest-tag">
           {tag}
         </span>
       </div>
