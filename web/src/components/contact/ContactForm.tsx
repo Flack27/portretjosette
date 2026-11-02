@@ -24,8 +24,10 @@ export function ContactForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [errorMsg, setErrorMsg] = useState("");
   // Stamped on mount, not during render: reading the clock while rendering is
-  // an impure call. The spam check only compares it at submit time, which is
-  // always after mount, so the value it sees is unchanged.
+  // an impure call. Only `elapsedMs` below is derived from it, at submit time,
+  // which is always after mount — and if this somehow never ran, the duration
+  // comes out enormous, which the server reads as "not a bot" rather than
+  // dropping the message.
   const renderedAt = useRef<number>(0);
   useEffect(() => {
     renderedAt.current = Date.now();
@@ -189,7 +191,7 @@ export function ContactForm() {
       </div>
 
       {status === "error" && (
-        <p role="alert" className="text-[14px] text-red-700">
+        <p role="alert" className="text-[14px] text-red-800">
           {errorMsg}
         </p>
       )}
