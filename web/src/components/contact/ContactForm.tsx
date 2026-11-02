@@ -39,8 +39,17 @@ export function ContactForm() {
       naam: String(data.get("naam") ?? "").trim(),
       email: String(data.get("email") ?? "").trim(),
       bericht: String(data.get("bericht") ?? "").trim(),
-      website: String(data.get("website") ?? ""), // honeypot
-      renderedAt: renderedAt.current,
+      // Honeypot. The field is named "hp_field" rather than something like
+      // "website" because password managers fill by field name and happily
+      // ignore autocomplete="off" - a filled honeypot silently discards a real
+      // message, so the name must mean nothing to an autofiller.
+      hp_field: String(data.get("hp_field") ?? ""),
+      // How long the visitor spent on the form, measured entirely in the
+      // browser. Deliberately NOT the render timestamp: the server used to
+      // subtract that from its own clock, so anyone whose device clock ran fast
+      // looked like an instant submit and had their message dropped in silence.
+      // A duration has no clock to disagree with.
+      elapsedMs: Math.max(0, Date.now() - renderedAt.current),
     };
 
     const next: Errors = {};
@@ -161,10 +170,22 @@ export function ContactForm() {
         )}
       </div>
 
-      {/* Honeypot — hidden from humans; bots that fill it are silently dropped. */}
+      {/* Honeypot: hidden from humans; bots that fill it are silently dropped.
+          The name is deliberately meaningless. It used to be "website", which
+          password managers recognise and fill even with autocomplete="off",
+          and a filled honeypot discards a real message without a trace. */}
       <div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden" tabIndex={-1}>
-        <label htmlFor="website">Laat dit veld leeg</label>
-        <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+        <label htmlFor="hp_field">Laat dit veld leeg</label>
+        <input
+          id="hp_field"
+          name="hp_field"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          data-1p-ignore
+          data-lpignore="true"
+          data-form-type="other"
+        />
       </div>
 
       {status === "error" && (
