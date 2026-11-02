@@ -33,6 +33,12 @@ services:
       NEXT_PUBLIC_INSTAGRAM_URL: ${NEXT_PUBLIC_INSTAGRAM_URL:-}
     ports:
       - "3000:3000"
+    volumes:
+      # next/image's optimised variants. Keeping them in a volume means a deploy
+      # no longer throws the whole gallery's cache away: without this, the first
+      # visitor after every `up --build` waits while each original is refetched
+      # and re-encoded, which is seconds of empty frames on the portfolio pages.
+      - web_image_cache:/app/.next/cache/images
 
   pocketbase:
     build:
@@ -68,3 +74,4 @@ services:
 
 volumes:
   pb_data:
+  web_image_cache:

@@ -36,6 +36,13 @@ COPY --from=build /app/public ./public
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 
+# Where next/image writes its optimised variants. Created here, owned by the
+# runtime user, so the compose volume mounted over it inherits that ownership —
+# a bare named volume would be root-owned and silently unwritable. Without the
+# volume this directory dies with the container, and every deploy makes the
+# gallery re-optimise each original from scratch (~2s apiece for a 7MB upload).
+RUN mkdir -p /app/.next/cache/images && chown -R nextjs:nodejs /app/.next/cache
+
 USER nextjs
 EXPOSE 3000
 CMD ["node", "server.js"]

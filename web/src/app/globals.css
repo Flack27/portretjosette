@@ -269,3 +269,16 @@
 @utility focus-on-dark {
   --focus-ring-color: var(--color-sage-400);
 }
+
+/* A frame waiting for its print. Image slots carry this tint so a picture that
+   has not arrived yet reads as an empty frame rather than a hole in the page:
+   the layout, the crop and the shadow are already right, only the drawing is
+   missing. A loaded image is opaque and covers it, so nothing has to switch it
+   off, and it costs no JavaScript and no second element.
+
+   Deliberately a flat tone rather than a pulse or a shimmer: several of these
+   sit on elements that already carry the scroll-reveal animation, and a second
+   `animation` on the same element would silently replace the first. */
+@utility image-slot {
+  background-color: var(--color-paper-100);
+}

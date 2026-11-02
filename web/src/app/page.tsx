@@ -69,7 +69,7 @@ export default async function HomePage() {
                 key={p.id}
                 href={`/portfolio/${p.category}`}
                 style={{ "--lay-i": i } as React.CSSProperties}
-                className="group lay-reveal focus-ring relative block aspect-square overflow-hidden rounded-crisp shadow-print-soft transition-transform duration-200 ease-settle active:scale-[0.98]"
+                className="group image-slot lay-reveal focus-ring relative block aspect-square overflow-hidden rounded-crisp shadow-print-soft transition-transform duration-200 ease-settle active:scale-[0.98]"
               >
                 <Image
                   src={p.image}

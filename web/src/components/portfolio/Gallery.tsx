@@ -90,7 +90,7 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
                 openerRef.current = e.currentTarget;
                 setIndex(i);
               }}
-              className="group focus-ring relative block aspect-square w-full overflow-hidden rounded-crisp shadow-print-soft transition-transform duration-200 ease-settle active:scale-[0.98]"
+              className="group image-slot focus-ring relative block aspect-square w-full overflow-hidden rounded-crisp shadow-print-soft transition-transform duration-200 ease-settle active:scale-[0.98]"
               aria-label={`Bekijk ${p.title}`}
             >
               <Image
@@ -98,6 +98,10 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
                 alt={p.alt}
                 fill
                 sizes="(min-width: 768px) 22vw, 45vw"
+                // The first row is the fold: fetch it at once instead of waiting
+                // for the lazy observer, which is what left the top of the
+                // gallery blank longest.
+                priority={i < 4}
                 className="object-cover transition-transform duration-500 ease-settle group-hover:scale-[1.04] group-focus-visible:scale-[1.04]"
               />
             </button>

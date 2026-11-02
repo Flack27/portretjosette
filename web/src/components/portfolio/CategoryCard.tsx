@@ -72,7 +72,7 @@ function fanLayout(previews: string[]): PrintCfg[] {
 function Print({ image, width, height, border, shadow, transform, zIndex }: PrintCfg) {
   return (
     <div
-      className={`absolute overflow-hidden rounded-crisp bg-white ${shadow}`}
+      className={`image-slot absolute overflow-hidden rounded-crisp ${shadow}`}
       style={{
         width,
         height,
