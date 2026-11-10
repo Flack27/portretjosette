@@ -3,12 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  getCategory,
-  getPortrait,
-  getPortraitWithNeighbours,
-  getPortraits,
-} from "@/lib/content";
+import { getCategory, getPortrait, getPortraitWithNeighbours } from "@/lib/content";
 import { pageMetadata, breadcrumbJsonLd, artworkJsonLd } from "@/lib/seo";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
@@ -17,9 +12,18 @@ import { JsonLd } from "@/components/seo/JsonLd";
 
 type Params = { params: Promise<{ categorie: string; werk: string }> };
 
+/*
+  Deliberately empty. This runs during `next build`, where the `pocketbase`
+  hostname does not resolve, so it would enumerate the seed's works instead of
+  Josette's — publishing pages for drawings that do not exist (they answered 200
+  while being absent from the sitemap) and still missing every real one.
+
+  Every work page is rendered on first request instead, where PocketBase is
+  reachable, and then cached. deploy.sh walks the sitemap afterwards so they are
+  warm before a visitor arrives.
+*/
 export async function generateStaticParams() {
-  const works = await getPortraits();
-  return works.map((p) => ({ categorie: p.category, werk: p.slug }));
+  return [];
 }
 
 /** One sentence describing the work, reused for the meta description and the page. */
