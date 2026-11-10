@@ -210,5 +210,13 @@ export default async function WorkPage({ params }: Params) {
   );
 }
 
-// Every work is known at build time; an unknown slug is a 404, not a render.
-export const dynamicParams = false;
+/*
+  Left on (the default) deliberately. `generateStaticParams` runs during
+  `next build`, and inside the Docker build the `pocketbase` hostname does not
+  resolve, so it sees the seed's works rather than Josette's — turning this off
+  would serve exactly 404 for every real drawing. On-demand rendering means a
+  slug that was not in the build set is rendered on first request, where
+  PocketBase is reachable, and cached from then on. A slug that belongs to no
+  work still 404s, via notFound() above.
+*/
+export const dynamicParams = true;
