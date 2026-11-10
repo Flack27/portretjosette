@@ -107,9 +107,18 @@ robots, OpenGraph, favicon). The rest is on Google's side:
 
 ## Updating later
 ```bash
-git pull && docker compose up -d --build
+git pull && docker compose up -d --build && ./deploy.sh --revalidate-only
 ```
-`pb_data` (Josette's content) is untouched by rebuilds.
+`pb_data` (Josette's content) is untouched by rebuilds, and `web_image_cache`
+keeps the optimised gallery images so the first visitor after a deploy is not
+waiting on every thumbnail being re-encoded.
+
+**The revalidate is not optional.** The pages are prerendered during
+`next build`, and inside the Docker build the `pocketbase` hostname does not
+resolve — so every CMS fetch fails and the hard-coded fallbacks in
+`web/src/content/seed.ts` get baked into the HTML. Until something triggers a
+regeneration the live site shows **seed placeholder prices and portraits**, not
+Josette's. `./deploy.sh` does the whole sequence, revalidate included.
 
 ---
 Full context, architecture and the content model are in [`README.md`](./README.md).
