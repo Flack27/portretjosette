@@ -43,19 +43,36 @@ interface PbPortrait extends PbRecord {
 }
 
 /*
-  Both orderings follow one rule, so Josette only has to learn it once: a photo
-  with a number is placed by that number, a photo without one falls in behind
-  the numbered photos, newest first.
+  Both orderings follow one rule, so Josette only has to learn it once: the
+  HIGHEST number comes first, and a photo without a number falls in behind every
+  numbered photo, newest first.
+
+  Highest-first rather than lowest-first because that is the way she already
+  reads these boxes: asked to put a photo at the front she typed 100, and asked
+  to put one at the top of the home strip she typed 1 — the same instinct
+  ("big number = important") pointing two different ways. Only one of those can
+  be right, so the site now agrees with the one she reaches for unprompted.
+  Moving to the front means beating the number above it; 900 always wins.
 
   Every list starts out newest-first from PocketBase and Array.sort is stable,
   so unnumbered photos keep that order without any extra tie-breaking.
 */
-const UNPLACED = Number.POSITIVE_INFINITY;
 
-const rank = (n: number | undefined) => (n && n > 0 ? n : UNPLACED);
+/** A photo's placement number, or 0 meaning "no number given". */
+const rank = (n: number | undefined) => (n && n > 0 ? n : 0);
 
 function byPlacement<T>(pick: (item: T) => number | undefined) {
-  return (a: T, b: T) => rank(pick(a)) - rank(pick(b));
+  return (a: T, b: T) => {
+    const a_ = rank(pick(a));
+    const b_ = rank(pick(b));
+    // Spelled out rather than returning a subtraction: the unnumbered case used
+    // to be Infinity, and Infinity - Infinity is NaN, which leaves the order of
+    // two unnumbered photos up to the engine.
+    if (a_ === b_) return 0; // same number, or both unnumbered
+    if (a_ === 0) return 1; // unnumbered falls in behind
+    if (b_ === 0) return -1;
+    return b_ - a_; // highest number first
+  };
 }
 
 /** A work's title as a URL segment: accents folded, punctuation dropped. */

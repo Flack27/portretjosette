@@ -119,7 +119,8 @@ export const PORTRAITS: Portrait[] = PORTRAIT_SEED.map(
       image: `/art/${file}`,
       alt: `Realistisch pastelportret — ${title} (${categoryName(category)})`,
       featured: Boolean(featured),
-      order: (i + 1) * 10,
+      // Highest first (see byPlacement in lib/content.ts), so count down.
+      order: (PORTRAIT_SEED.length - i) * 10,
       // The fallback has no opinion on the home strip's sequence; featured
       // works fall back to newest-first, which is what 0 means.
       homeOrder: 0,

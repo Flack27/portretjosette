@@ -11,32 +11,44 @@ Elke tekening heeft twee nummers. Je hoeft ze niet allebei in te vullen.
 
 ## De regel (dezelfde voor allebei)
 
-- Een tekening **mét** een nummer staat op dat nummer, van laag naar hoog.
-- Een tekening **zonder** nummer (of met 0) komt daarachter, de nieuwste eerst.
+> ## Het hóógste nummer staat vooraan.
+>
+> 100 staat dus vóór 50. En 50 staat vóór 10.
+
+- Een tekening **zonder** nummer (of met 0) komt achter alle genummerde
+  tekeningen, de nieuwste eerst.
+
+Denk aan rapportcijfers: het beste cijfer staat bovenaan. Niet aan een rij
+wachtenden, want daar is nummer 1 juist de eerste.
 
 ## Iets verplaatsen
 
-De nummers lopen met stappen van tien: **10, 20, 30, 40 …**
+De nummers lopen met stappen van tien: **… 40, 30, 20, 10**, van voor naar
+achter.
 
 Dat is expres. Je hoeft nooit alle nummers te veranderen — alleen dat ene.
 
-> Een tekening staat op 30 en je wilt hem tussen 10 en 20 hebben?
-> **Typ 15.** Opslaan. Klaar.
+> Een tekening staat op 10 en je wilt hem tussen 30 en 20 hebben?
+> **Typ 25.** Opslaan. Klaar.
 
-- Helemaal vooraan: typ **5**.
-- Helemaal achteraan: typ een hoog nummer, bijvoorbeeld **900**.
-- Twee tekeningen met hetzelfde nummer kan, maar dan bepaalt de computer
-  welke van de twee vooraan komt. Geef ze liever elk een eigen nummer.
+- Helemaal vooraan: typ **900**. Dat is hoger dan alles, dus die wint altijd.
+- Helemaal achteraan: typ **1**.
+- Ergens tussen twee tekeningen: kijk welke nummers die twee hebben en typ een
+  nummer dat daartussen ligt.
+
+Twee tekeningen met hetzelfde nummer kan, maar dan bepaalt de computer welke
+van de twee vooraan komt. Geef ze liever elk een eigen nummer.
 
 Zijn de nummers na een tijdje rommelig geworden? Zet ze gerust opnieuw op
-10, 20, 30 — dat mag altijd.
+10, 20, 30, 40 — dat mag altijd, als de hoogste maar vooraan hoort te staan.
 
 ## De homepage
 
-- Vinkje **featured** aan → de tekening mag op de homepage komen.
-- **homeOrder** bepaalt in welke volgorde ze daar staan (weer 10, 20, 30 …).
+- Vinkje **featured** aan → de tekening **mag** op de homepage komen.
+- **homeOrder** bepaalt in welke volgorde ze daar staan. Weer: hoogste vooraan.
 - De homepage laat er **vier** zien. Staan er meer op `featured` dan vier, dan
-  komen alleen de eerste vier in beeld.
+  komen alleen de vier met de hoogste `homeOrder` in beeld — de rest staat wel
+  aangevinkt, maar is niet te zien.
 - Vink je alles uit, dan vult de homepage zichzelf met de nieuwste tekeningen.
 
 ## Nog even dit
