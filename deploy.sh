@@ -72,11 +72,16 @@ echo "    $body"
 # next request, and that request is still served the old HTML. Asking twice means
 # the next real visitor gets the fresh page rather than triggering it themselves.
 echo "==> warming the pages"
-for path in / /portfolio /tarieven /over-mij /contact; do
-  curl -s -o /dev/null "http://127.0.0.1:3000$path"
-done
+# sitemap.xml is prerendered from PocketBase too, so it needs warming like any
+# page: left cold it keeps serving the seed's own list of drawings.
+PATHS="/ /portfolio /tarieven /over-mij /contact /sitemap.xml /robots.txt"
+for path in $PATHS; do curl -s -o /dev/null "http://127.0.0.1:3000$path"; done
 sleep 2
-for path in / /portfolio /tarieven /over-mij /contact; do
+for path in $PATHS; do curl -s -o /dev/null "http://127.0.0.1:3000$path"; done
+
+# Category pages are generated per slug; take them from the sitemap itself.
+for path in $(curl -s http://127.0.0.1:3000/sitemap.xml \
+  | grep -o '<loc>[^<]*/portfolio/[^<]*' | sed 's#.*</*loc>##; s#https\?://[^/]*##'); do
   curl -s -o /dev/null "http://127.0.0.1:3000$path"
 done
 
@@ -84,6 +89,11 @@ done
 # exists in seed.ts; Josette's own rows say "Vogels, bosdieren & insecten".
 if curl -s http://127.0.0.1:3000/tarieven | grep -q 'Bosdier'; then
   echo "WARNING: /tarieven is still serving seed prices. Re-run --revalidate-only." >&2
+  exit 1
+fi
+# Seed images are project-relative (/art/...); Josette's are PocketBase URLs.
+if curl -s http://127.0.0.1:3000/sitemap.xml | grep -q '<image:loc>[^<]*/art/'; then
+  echo "WARNING: sitemap.xml still lists the seed's drawings. Re-run --revalidate-only." >&2
   exit 1
 fi
 

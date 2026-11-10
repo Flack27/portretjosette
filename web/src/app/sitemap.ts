@@ -26,7 +26,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: now,
     changeFrequency: "monthly",
     priority: 0.8,
-    images: portraits.filter((p) => p.category === c.slug).map((p) => p.image),
+    images: portraits
+      .filter((p) => p.category === c.slug)
+      // A sitemap may only carry absolute URLs. Live images already are, being
+      // PocketBase file URLs, but the seed fallback uses project-relative paths
+      // like /art/vrouw.webp — and the sitemap is prerendered at build time,
+      // when PocketBase is not reachable, so that fallback does get rendered.
+      .map((p) => (/^https?:\/\//.test(p.image) ? p.image : absoluteUrl(p.image))),
   }));
 
   return [...staticRoutes, ...categoryRoutes];
