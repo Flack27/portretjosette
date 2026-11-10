@@ -23,8 +23,13 @@ export interface Portrait {
   /** Absolute URL (PocketBase) or app-local path (/art/…). */
   image: string;
   alt: string;
+  /** Whether this work appears in the home page strip. */
   featured: boolean;
+  /** Position inside its own category: the gallery page, and the first five
+   *  become the folder-card fan. 0 means "no preference" — newest first. */
   order: number;
+  /** Position in the home page strip, for featured works. 0 means newest. */
+  homeOrder: number;
 }
 
 export type PriceGroup = "Portretten" | "Klein werk" | "Afwerking";

@@ -36,9 +36,26 @@ interface PbPortrait extends PbRecord {
   category: CategorySlug;
   medium: string;
   order: number;
+  homeOrder: number;
   featured: boolean;
   alt: string;
   image: string;
+}
+
+/*
+  Both orderings follow one rule, so Josette only has to learn it once: a photo
+  with a number is placed by that number, a photo without one falls in behind
+  the numbered photos, newest first.
+
+  Every list starts out newest-first from PocketBase and Array.sort is stable,
+  so unnumbered photos keep that order without any extra tie-breaking.
+*/
+const UNPLACED = Number.POSITIVE_INFINITY;
+
+const rank = (n: number | undefined) => (n && n > 0 ? n : UNPLACED);
+
+function byPlacement<T>(pick: (item: T) => number | undefined) {
+  return (a: T, b: T) => rank(pick(a)) - rank(pick(b));
 }
 
 export const getPortraits = cache(async (): Promise<Portrait[]> => {
@@ -59,6 +76,7 @@ export const getPortraits = cache(async (): Promise<Portrait[]> => {
         alt: r.alt || `Realistisch portret — ${r.title}`,
         featured: Boolean(r.featured),
         order: r.order ?? 0,
+        homeOrder: r.homeOrder ?? 0,
       }));
   } catch (err) {
     devWarn("portraits", err);
@@ -66,20 +84,22 @@ export const getPortraits = cache(async (): Promise<Portrait[]> => {
   }
 });
 
+/** A category's works in Josette's own order — the gallery page's sequence. */
 export const getPortraitsByCategory = cache(
   async (slug: CategorySlug): Promise<Portrait[]> => {
     const all = await getPortraits();
-    return all.filter((p) => p.category === slug);
+    return all.filter((p) => p.category === slug).sort(byPlacement((p) => p.order));
   },
 );
 
 export const getFeaturedPortraits = cache(
   async (limit = 4): Promise<Portrait[]> => {
     const all = await getPortraits(); // already newest-first
-    const featured = all.filter((p) => p.featured);
+    // `featured` picks which works reach the home page, `homeOrder` sequences
+    // them. Anything left over backfills with the newest work, so the strip is
+    // never short of images if Josette un-features something.
+    const featured = all.filter((p) => p.featured).sort(byPlacement((p) => p.homeOrder));
     const rest = all.filter((p) => !p.featured);
-    // Pinned (featured) first, then newest — same rule as the category fan, so
-    // "featured" means "to the front" consistently everywhere.
     return [...featured, ...rest].slice(0, limit);
   },
 );
@@ -113,7 +133,7 @@ export const getCategories = cache(async (): Promise<Category[]> => {
 
 export interface CategoryWithCount extends Category {
   count: number;
-  /** Up to 5 image URLs for the folder-card fan (order number first, then newest). */
+  /** Up to 5 image URLs for the folder-card fan — the first five of the category. */
   previews: string[];
 }
 
@@ -127,18 +147,15 @@ export const getCategoriesWithCounts = cache(
       .slice()
       .sort((a, b) => CATEGORY_ORDER.indexOf(a.slug) - CATEGORY_ORDER.indexOf(b.slug))
       .map((c) => {
+        // The fan is the first five of the category's own order rather than a
+        // separate list: "the first five of this category" is one idea to keep
+        // track of instead of two, and it was two lists sharing one field that
+        // made the numbers confusing in the first place.
+        // previews[0] lands in the fan centre, [1] left-middle, [2] right-middle,
+        // [3] left-outer, [4] right-outer (see CategoryCard fanLayout).
         const inCategory = portraits
           .filter((p) => p.category === c.slug)
-          // Fan order: photos with an `order` number come first (1,2,3…), the rest
-          // by newest. inCategory is already newest-first (getPortraits sorts -created)
-          // and Array.sort is stable, so unordered photos keep their newest order.
-          // previews[0] lands in the fan centre, [1] left-middle, [2] right-middle,
-          // [3] left-outer, [4] right-outer (see CategoryCard fanLayout).
-          .sort((a, b) => {
-            const ao = a.order && a.order > 0 ? a.order : Infinity;
-            const bo = b.order && b.order > 0 ? b.order : Infinity;
-            return ao - bo;
-          });
+          .sort(byPlacement((p) => p.order));
         return {
           ...c,
           count: inCategory.length,
