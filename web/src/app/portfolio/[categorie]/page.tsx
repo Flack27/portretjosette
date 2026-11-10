@@ -78,7 +78,7 @@ export default async function CategoryPage({ params }: Params) {
         </p>
 
         <div className="mt-8">
-          <Gallery portraits={portraits} />
+          <Gallery portraits={portraits} categorySlug={category.slug} />
         </div>
       </Container>
     </section>

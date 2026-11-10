@@ -35,5 +35,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .map((p) => (/^https?:\/\//.test(p.image) ? p.image : absoluteUrl(p.image))),
   }));
 
-  return [...staticRoutes, ...categoryRoutes];
+  // Each work now has a page of its own, which is the thing Google Images can
+  // actually land a visitor on. The category entries keep their image list so a
+  // thumbnail found there still resolves to a page that shows it.
+  const workRoutes: MetadataRoute.Sitemap = portraits.map((p) => ({
+    url: absoluteUrl(`/portfolio/${p.category}/${p.slug}`),
+    lastModified: now,
+    changeFrequency: "yearly",
+    priority: 0.6,
+    images: [/^https?:\/\//.test(p.image) ? p.image : absoluteUrl(p.image)],
+  }));
+
+  return [...staticRoutes, ...categoryRoutes, ...workRoutes];
 }

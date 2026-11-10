@@ -1,18 +1,32 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { Portrait } from "@/lib/types";
 
-/** Square gallery grid with an accessible lightbox (Esc / ← → / backdrop). */
-export function Gallery({ portraits }: { portraits: Portrait[] }) {
+/**
+ * Square gallery grid with an accessible lightbox (Esc / ← → / backdrop).
+ *
+ * Each tile is a real link to the work's own page and the lightbox is layered on
+ * top: a plain click opens the overlay, while crawlers, middle-click, ctrl-click
+ * and a visitor without JavaScript all get the page. Before this the tiles were
+ * buttons, so the works existed only inside the grid.
+ */
+export function Gallery({
+  portraits,
+  categorySlug,
+}: {
+  portraits: Portrait[];
+  categorySlug: string;
+}) {
   const [index, setIndex] = useState<number | null>(null);
   const open = index !== null;
   const count = portraits.length;
   const dialogRef = useRef<HTMLDivElement>(null);
   // The tile that opened the lightbox, so focus can go back where it came from.
-  const openerRef = useRef<HTMLButtonElement | null>(null);
+  const openerRef = useRef<HTMLAnchorElement | null>(null);
 
   const close = useCallback(() => setIndex(null), []);
   const prev = useCallback(
@@ -33,7 +47,11 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
     const opener = openerRef.current;
 
     const focusable = () =>
-      Array.from(dialog?.querySelectorAll<HTMLElement>("button:not([disabled])") ?? []);
+      Array.from(
+        dialog?.querySelectorAll<HTMLElement>(
+          "a[href], button:not([disabled])",
+        ) ?? [],
+      );
 
     focusable()[0]?.focus();
 
@@ -84,9 +102,14 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
             // Stagger by column, so a row of prints lays down left to right.
             style={{ "--lay-i": i % 4 } as React.CSSProperties}
           >
-            <button
-              type="button"
+            <Link
+              href={`/portfolio/${categorySlug}/${p.slug}`}
               onClick={(e) => {
+                // Let the browser handle anything that means "open elsewhere".
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+                  return;
+                }
+                e.preventDefault();
                 openerRef.current = e.currentTarget;
                 setIndex(i);
               }}
@@ -104,7 +127,7 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
                 priority={i < 4}
                 className="object-cover transition-transform duration-500 ease-settle group-hover:scale-[1.04] group-focus-visible:scale-[1.04]"
               />
-            </button>
+            </Link>
           </li>
         ))}
       </ul>
@@ -165,6 +188,13 @@ export function Gallery({ portraits }: { portraits: Portrait[] }) {
                 {current.medium && (
                   <span className="ml-2 text-[13px]">· {current.medium}</span>
                 )}
+                {/* A way out of the overlay to the work's own, shareable page. */}
+                <Link
+                  href={`/portfolio/${categorySlug}/${current.slug}`}
+                  className="focus-ring focus-on-dark mt-2 block text-[13px] underline underline-offset-4 transition-colors hover:text-white"
+                >
+                  Bekijk deze tekening
+                </Link>
               </figcaption>
             </figure>
 

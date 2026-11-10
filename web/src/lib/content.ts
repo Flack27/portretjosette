@@ -58,17 +58,55 @@ function byPlacement<T>(pick: (item: T) => number | undefined) {
   return (a: T, b: T) => rank(pick(a)) - rank(pick(b));
 }
 
+/** A work's title as a URL segment: accents folded, punctuation dropped. */
+function slugify(title: string) {
+  return (
+    title
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "") // ë → e, ï → i
+      .toLowerCase()
+      .replace(/['’]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "werk"
+  );
+}
+
+/**
+ * Give every work a stable, unique URL slug derived from its title.
+ *
+ * Titles repeat — "Wereldpastelportret" is used four times — so duplicates take
+ * a short slice of their PocketBase id. Assignment walks oldest-first, which
+ * means the oldest work keeps the clean slug and a newer one being added, or a
+ * newer one being deleted, never changes a URL that is already published.
+ *
+ * `items` arrives newest-first, so this iterates backwards.
+ */
+function assignSlugs(works: Portrait[]) {
+  const taken = new Set<string>();
+  for (let i = works.length - 1; i >= 0; i--) {
+    const work = works[i];
+    const base = slugify(work.title);
+    let slug = base;
+    for (let n = 6; taken.has(slug) && n <= work.id.length; n++) {
+      slug = `${base}-${work.id.slice(0, n)}`;
+    }
+    work.slug = slug;
+    taken.add(slug);
+  }
+  return works;
+}
+
 export const getPortraits = cache(async (): Promise<Portrait[]> => {
   try {
     const items = await pbList<PbPortrait>("portraits", {
       tag: PB_TAGS.portraits,
       sort: "-created",
     });
-    return items
+    const works = items
       .filter((r) => r.image)
       .map((r) => ({
         id: r.id,
-        slug: r.id,
+        slug: r.id, // replaced by assignSlugs below
         title: r.title,
         category: r.category,
         medium: r.medium || "Pastelkrijt",
@@ -78,11 +116,40 @@ export const getPortraits = cache(async (): Promise<Portrait[]> => {
         order: r.order ?? 0,
         homeOrder: r.homeOrder ?? 0,
       }));
+    return assignSlugs(works);
   } catch (err) {
     devWarn("portraits", err);
     return PORTRAITS;
   }
 });
+
+/** One work by its category and URL slug (the work's own page). */
+export const getPortrait = cache(
+  async (categorie: string, werk: string): Promise<Portrait | undefined> => {
+    const all = await getPortraits();
+    return all.find((p) => p.category === categorie && p.slug === werk);
+  },
+);
+
+/**
+ * The work, plus its neighbours in the category's own order, so a visitor can
+ * walk the collection from any single work instead of going back to the grid.
+ */
+export const getPortraitWithNeighbours = cache(
+  async (categorie: string, werk: string) => {
+    const inCategory = await getPortraitsByCategory(categorie as CategorySlug);
+    const index = inCategory.findIndex((p) => p.slug === werk);
+    if (index === -1) return undefined;
+    return {
+      work: inCategory[index],
+      position: index + 1,
+      total: inCategory.length,
+      // Wraps, matching the lightbox's arrow keys.
+      previous: inCategory[(index - 1 + inCategory.length) % inCategory.length],
+      next: inCategory[(index + 1) % inCategory.length],
+    };
+  },
+);
 
 /** A category's works in Josette's own order — the gallery page's sequence. */
 export const getPortraitsByCategory = cache(
