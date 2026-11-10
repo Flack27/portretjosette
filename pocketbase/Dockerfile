@@ -23,6 +23,10 @@ COPY --from=download /pb/pocketbase /pb/pocketbase
 # Version-controlled schema + hooks. pb_data is a mounted volume (see compose).
 COPY pb_migrations /pb/pb_migrations
 COPY pb_hooks /pb/pb_hooks
+# Served at the host root (--publicDir defaults here). Holds robots.txt, which
+# keeps the admin UI out of search results while leaving /api/files/ — the
+# gallery images the sitemap points at — fully crawlable.
+COPY pb_public /pb/pb_public
 EXPOSE 8090
 # Migrations in pb_migrations are applied automatically on start.
 CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8090"]

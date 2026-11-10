@@ -1,0 +1,12 @@
+# cms.portretdoorjosette.nl — Josette's CMS and the image host.
+#
+# This host has to stay publicly crawlable: every drawing on the website is
+# served from /api/files/, and those are the URLs the sitemap points Google
+# Images at. So nothing here blocks /api/.
+#
+# The admin interface is the one thing that should never turn up in a search
+# result. Without this file the host answered "Allow: /" for everything,
+# including the login screen.
+
+User-agent: *
+Disallow: /_/
